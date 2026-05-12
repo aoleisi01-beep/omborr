@@ -14,7 +14,7 @@
 body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;min-height:100vh}
 
 .tabs{display:flex;background:#13131f;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50}
-.tab{flex:1;padding:13px 5px;text-align:center;font-size:11px;font-weight:700;color:var(--muted);border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;letter-spacing:.5px}
+.tab{flex:1;padding:13px 3px;text-align:center;font-size:10px;font-weight:700;color:var(--muted);border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;letter-spacing:.3px}
 .tab.active{color:var(--gold);border-bottom-color:var(--gold)}
 .page{display:none;padding-bottom:90px}
 .page.active{display:block}
@@ -46,8 +46,11 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;mi
 .empty-sub{font-size:12px;margin-top:5px}
 
 .card{background:linear-gradient(135deg,#1c1c2e,#1a1a2a);border:1px solid var(--border);border-radius:14px;padding:11px;display:flex;gap:11px;align-items:flex-start}
-.card-img{width:62px;height:62px;border-radius:10px;overflow:hidden;flex-shrink:0;background:rgba(255,255,255,0.05);display:flex;align-items:center;justify-content:center;font-size:22px}
+.card-img{width:62px;height:62px;border-radius:10px;overflow:hidden;flex-shrink:0;background:rgba(255,255,255,0.05);display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer}
 .card-img img{width:100%;height:100%;object-fit:cover}
+.img-viewer{position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:999;display:flex;align-items:center;justify-content:center}
+.img-viewer img{max-width:100%;max-height:100%;object-fit:contain;border-radius:8px}
+.img-viewer-close{position:absolute;top:16px;right:16px;width:40px;height:40px;background:rgba(255,255,255,0.15);border:none;color:#fff;font-size:22px;border-radius:50%;cursor:pointer}
 .card-info{flex:1;min-width:0}
 .card-name{font-weight:700;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px}
 .price-tag{font-size:11px;padding:2px 8px;border-radius:5px;font-weight:600;display:inline-block;margin-bottom:4px;background:rgba(34,197,94,0.15);color:#4ade80}
@@ -118,6 +121,7 @@ video{width:100%;display:block;border-radius:12px}
 <div class="tabs">
   <button class="tab active" onclick="switchTab('ombor',this)">📦 Ombor</button>
   <button class="tab" onclick="switchTab('sotilgan',this)">🛒 Sotilgan</button>
+  <button class="tab" onclick="switchTab('tugagan',this)">🔴 Tugagan</button>
   <button class="tab" onclick="switchTab('hisobot',this)">📊 Hisobot</button>
 </div>
 
@@ -168,7 +172,27 @@ video{width:100%;display:block;border-radius:12px}
   <div class="report-section" id="hisobotContent"></div>
 </div>
 
+<!-- TUGAGAN -->
+<div class="page" id="page-tugagan">
+  <div class="hcard">
+    <div class="hcard-row">
+      <div class="brand" style="background:linear-gradient(90deg,#ef4444,#f59e0b);-webkit-background-clip:text;-webkit-text-fill-color:transparent">🔴 TUGAGAN</div>
+      <div style="text-align:right">
+        <div style="font-size:22px;font-weight:900;color:var(--red)" id="tugaganCount">0</div>
+        <div style="font-size:10px;color:var(--muted)">tur mahsulot</div>
+      </div>
+    </div>
+  </div>
+  <div class="list" id="tugaganList"></div>
+</div>
+
 <button class="fab" id="fabBtn" onclick="openAdd()">+</button>
+
+<!-- RASM KO'RISH -->
+<div class="img-viewer" id="imgViewer" style="display:none" onclick="closeViewer()">
+  <button class="img-viewer-close" onclick="closeViewer()">✕</button>
+  <img id="viewerImg" src="" alt="">
+</div>
 
 <!-- QO'SHISH MODAL -->
 <div class="overlay" id="modal" style="display:none">
@@ -286,6 +310,14 @@ let editId = null, sellId = null;
 let currentImage = null, sellImage = null;
 let stream = null, sStream = null;
 
+function openViewer(src) {
+  document.getElementById('viewerImg').src = src;
+  document.getElementById('imgViewer').style.display = 'flex';
+}
+function closeViewer() {
+  document.getElementById('imgViewer').style.display = 'none';
+}
+
 function fmt(n) { return Number(n||0).toLocaleString('uz-UZ'); }
 function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
@@ -312,6 +344,7 @@ function switchTab(tab, el) {
   document.getElementById('page-' + tab).classList.add('active');
   document.getElementById('fabBtn').style.display = tab === 'ombor' ? 'flex' : 'none';
   if (tab === 'sotilgan') renderSotilgan();
+  if (tab === 'tugagan') renderTugagan();
   if (tab === 'hisobot') renderHisobot();
 }
 
@@ -350,7 +383,7 @@ function renderOmbor() {
     const qc = p.qty === 0 ? '#ef4444' : p.qty < 5 ? '#f59e0b' : '#22c55e';
     const soldQty = sales.filter(s => s.productId === p.id).reduce((a, s) => a + s.qty, 0);
     return `<div class="card">
-      <div class="card-img">${p.image ? `<img src="${p.image}" alt="">` : '📦'}</div>
+      <div class="card-img" ${p.image ? `onclick="openViewer('${p.image}')"` : ''}>${p.image ? `<img src="${p.image}" alt="">` : '📦'}</div>
       <div class="card-info">
         <div class="card-name">${esc(p.name)}</div>
         ${p.sellPrice ? `<span class="price-tag">💵 ${fmt(p.sellPrice)} so'm</span>` : ''}
@@ -381,7 +414,10 @@ async function changeQty(id, d) {
 }
 
 async function delProduct(id) {
-  if (!confirm("O'chirilsinmi?")) return;
+  const p = products.find(x => x.id === id);
+  if (!p) return;
+  if (!confirm(`"${p.name}" o'chirilsinmi?`)) return;
+  if (!confirm(`Ishonchingiz komilmi? "${p.name}" butunlay o'chib ketadi!`)) return;
   products = products.filter(p => p.id !== id);
   await dbDelete('products', id);
   renderOmbor();
@@ -512,7 +548,41 @@ function renderSotilgan() {
         <div class="sold-row"><span class="sold-lbl">Jami summa:</span><span class="sold-val" style="color:var(--green)">${fmt(s.totalSum)} so'm</span></div>
         <div class="sold-row"><span class="sold-lbl" style="color:var(--muted)">${s.date} ${s.time || ''}</span><span></span></div>
       </div>
+      <button class="act-btn act-del" onclick="delSale(${s.id})" style="flex-shrink:0;align-self:center">🗑️</button>
     </div>`).join('');
+}
+
+// ===== TUGAGAN =====
+function renderTugagan() {
+  const tugagan = products.filter(p => p.qty === 0);
+  document.getElementById('tugaganCount').textContent = tugagan.length;
+  const list = document.getElementById('tugaganList');
+  if (tugagan.length === 0) {
+    list.innerHTML = `<div class="empty"><div class="empty-ico">✅</div><div class="empty-ttl">Tugagan mahsulot yo'q</div><div class="empty-sub">Barcha tovarlar mavjud!</div></div>`;
+    return;
+  }
+  list.innerHTML = tugagan.map(p => `
+    <div class="card" style="border-color:rgba(239,68,68,0.3)">
+      <div class="card-img" ${p.image ? `onclick="openViewer('${p.image}')"` : ''}>${p.image ? `<img src="${p.image}" alt="">` : '📦'}</div>
+      <div class="card-info">
+        <div class="card-name">${esc(p.name)}</div>
+        ${p.sellPrice ? `<span class="price-tag">💵 ${fmt(p.sellPrice)} so'm</span>` : ''}
+        <div class="card-date">${p.date}</div>
+        <div style="font-size:12px;color:var(--red);font-weight:700;margin-top:4px">❌ Tugagan</div>
+      </div>
+      <div class="card-actions">
+        <button class="act-btn act-edit" onclick="openEdit(${p.id})">✏️</button>
+        <button class="act-btn act-del" onclick="delProduct(${p.id})">🗑️</button>
+      </div>
+    </div>`).join('');
+}
+
+async function delSale(id) {
+  if (!confirm("Bu yozuv o'chirilsinmi?")) return;
+  sales = sales.filter(s => s.id !== id);
+  await dbDelete('sales', id);
+  renderSotilgan();
+  showToast("O'chirildi 🗑️");
 }
 
 // ===== HISOBOT =====
@@ -621,3 +691,4 @@ openDB().then(async () => {
 </script>
 </body>
 </html>
+
