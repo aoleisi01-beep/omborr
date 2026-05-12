@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0f0f13">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Ombor">
+<title>Mening Omborim</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{--bg:#0f0f13;--border:rgba(255,255,255,0.08);--gold:#f59e0b;--red:#ef4444;--green:#22c55e;--blue:#3b82f6;--purple:#818cf8;--text:#f0ede8;--muted:#6b7280}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;min-height:100vh}
+
+.tabs{display:flex;background:#13131f;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50}
+.tab{flex:1;padding:13px 5px;text-align:center;font-size:11px;font-weight:700;color:var(--muted);border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;letter-spacing:.5px}
+.tab.active{color:var(--gold);border-bottom-color:var(--gold)}
+.page{display:none;padding-bottom:90px}
+.page.active{display:block}
+
+.hcard{background:linear-gradient(135deg,#1a1a2e,#16213e);padding:14px}
+.hcard-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.brand{font-size:20px;font-weight:900;background:linear-gradient(90deg,#f59e0b,#ef4444);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.search-wrap{position:relative}
+.search-ico{position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:13px}
+.search-input{width:100%;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:9px;padding:10px 11px 10px 33px;color:var(--text);font-size:13px;outline:none}
+
+.stats{display:flex;gap:7px;padding:12px 12px 0}
+.stat{flex:1;border-radius:10px;padding:9px 8px;text-align:center}
+.stat-gold{background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.2)}
+.stat-red{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2)}
+.stat-green{background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.2)}
+.stat-num{font-size:15px;font-weight:800}
+.stat-gold .stat-num{color:var(--gold)}
+.stat-red .stat-num{color:var(--red)}
+.stat-green .stat-num{color:var(--green)}
+.stat-lbl{font-size:9px;color:#9ca3af;margin-top:2px}
+
+.sum-card{margin:10px 12px 0;background:linear-gradient(135deg,rgba(34,197,94,0.12),rgba(34,197,94,0.06));border:1px solid rgba(34,197,94,0.25);border-radius:12px;padding:12px 14px}
+
+.list{padding:10px 12px;display:flex;flex-direction:column;gap:10px}
+.empty{text-align:center;padding:50px 20px;color:var(--muted)}
+.empty-ico{font-size:42px;margin-bottom:10px}
+.empty-ttl{font-size:14px;font-weight:600}
+.empty-sub{font-size:12px;margin-top:5px}
+
+.card{background:linear-gradient(135deg,#1c1c2e,#1a1a2a);border:1px solid var(--border);border-radius:14px;padding:11px;display:flex;gap:11px;align-items:flex-start}
+.card-img{width:62px;height:62px;border-radius:10px;overflow:hidden;flex-shrink:0;background:rgba(255,255,255,0.05);display:flex;align-items:center;justify-content:center;font-size:22px}
+.card-img img{width:100%;height:100%;object-fit:cover}
+.card-info{flex:1;min-width:0}
+.card-name{font-weight:700;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px}
+.price-tag{font-size:11px;padding:2px 8px;border-radius:5px;font-weight:600;display:inline-block;margin-bottom:4px;background:rgba(34,197,94,0.15);color:#4ade80}
+.card-date{font-size:10px;color:var(--muted);margin-bottom:5px}
+.qty-row{display:flex;align-items:center;gap:6px}
+.qty-btn{width:26px;height:26px;border-radius:6px;border:none;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;font-weight:700}
+.qty-minus{background:rgba(239,68,68,0.12);color:var(--red);border:1px solid rgba(239,68,68,0.3)}
+.qty-plus{background:rgba(34,197,94,0.12);color:var(--green);border:1px solid rgba(34,197,94,0.3)}
+.qty-val{min-width:28px;text-align:center;font-weight:800;font-size:14px}
+.qty-unit{font-size:10px;color:var(--muted)}
+.sold-badge{font-size:10px;color:var(--blue);margin-top:3px}
+.card-actions{display:flex;flex-direction:column;gap:6px;flex-shrink:0}
+.act-btn{width:32px;height:32px;border-radius:8px;border:none;cursor:pointer;font-size:14px}
+.act-sell{background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.3)}
+.act-edit{background:rgba(99,102,241,0.12);border:1px solid rgba(99,102,241,0.3)}
+.act-del{background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25)}
+
+.sold-card{background:linear-gradient(135deg,#1c1c2e,#1a1a2a);border:1px solid var(--border);border-radius:14px;padding:12px;display:flex;gap:11px;align-items:center}
+.sold-img{width:52px;height:52px;border-radius:9px;overflow:hidden;flex-shrink:0;background:rgba(255,255,255,0.05);display:flex;align-items:center;justify-content:center;font-size:20px}
+.sold-img img{width:100%;height:100%;object-fit:cover}
+.sold-body{flex:1;min-width:0}
+.sold-name{font-weight:700;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:5px}
+.sold-row{display:flex;justify-content:space-between;font-size:11px;padding:2px 0}
+.sold-lbl{color:var(--muted)}
+.sold-val{font-weight:700}
+
+.report-section{padding:12px}
+.report-title{font-size:11px;color:var(--muted);letter-spacing:1px;margin-bottom:8px;text-transform:uppercase}
+.report-card{background:linear-gradient(135deg,#1c1c2e,#1a1a2a);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:10px}
+.report-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.04)}
+.report-row:last-child{border-bottom:none}
+.report-lbl{font-size:12px;color:var(--muted)}
+.report-val{font-size:13px;font-weight:800}
+.big-sum{text-align:center;padding:18px;border-radius:14px;margin-bottom:10px;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3)}
+.big-sum-lbl{font-size:11px;color:var(--muted);margin-bottom:5px}
+.big-sum-num{font-size:26px;font-weight:900;color:var(--green)}
+
+.fab{position:fixed;bottom:24px;right:20px;width:56px;height:56px;border-radius:16px;background:linear-gradient(135deg,#f59e0b,#ef4444);border:none;color:#fff;font-size:26px;cursor:pointer;box-shadow:0 8px 26px rgba(245,158,11,0.45);z-index:100;display:flex;align-items:center;justify-content:center}
+
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:200;display:flex;flex-direction:column;justify-content:flex-end}
+.modal{background:#13131f;border-radius:20px 20px 0 0;padding:20px 16px 32px;max-height:92vh;overflow-y:auto}
+.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.modal-title{font-size:16px;font-weight:800}
+.close-btn{background:rgba(255,255,255,0.08);border:none;color:#9ca3af;width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:16px}
+video{width:100%;display:block;border-radius:12px}
+.cam-btns{display:flex;gap:9px;margin-top:8px;margin-bottom:10px}
+.img-preview{border-radius:12px;overflow:hidden;height:130px;margin-bottom:9px}
+.img-preview img{width:100%;height:100%;object-fit:cover}
+.img-btns{display:flex;gap:9px;margin-bottom:12px}
+.img-btn{flex:1;padding:10px;border-radius:10px;border:none;font-weight:600;font-size:12px;cursor:pointer}
+.img-btn-cam{background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.3);color:var(--gold)}
+.img-btn-gal{background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.3);color:var(--purple)}
+.field{margin-bottom:10px}
+.field label{font-size:10px;color:var(--muted);display:block;margin-bottom:4px;letter-spacing:1px}
+.field input{width:100%;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:10px;padding:12px;color:var(--text);font-size:14px;outline:none}
+.field-row{display:flex;gap:8px}
+.field-row .field{flex:1}
+.qty-inp{color:var(--gold)!important;font-size:16px!important;font-weight:800!important;text-align:center!important}
+.save-btn{width:100%;padding:14px;border-radius:12px;background:linear-gradient(135deg,#f59e0b,#ef4444);border:none;color:#fff;font-size:14px;font-weight:800;cursor:pointer;margin-top:4px}
+.sell-btn{width:100%;padding:14px;border-radius:12px;background:linear-gradient(135deg,#22c55e,#16a34a);border:none;color:#fff;font-size:14px;font-weight:800;cursor:pointer;margin-top:8px}
+.loading{text-align:center;padding:40px;color:var(--muted);font-size:14px}
+.toast{position:fixed;top:16px;left:50%;transform:translateX(-50%);background:#22c55e;color:#fff;padding:9px 22px;border-radius:26px;font-weight:600;font-size:12px;z-index:999;white-space:nowrap;box-shadow:0 4px 16px rgba(34,197,94,0.4)}
+.toast.err{background:var(--red)}
+</style>
+</head>
+<body>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('ombor',this)">📦 Ombor</button>
+  <button class="tab" onclick="switchTab('sotilgan',this)">🛒 Sotilgan</button>
+  <button class="tab" onclick="switchTab('hisobot',this)">📊 Hisobot</button>
+</div>
+
+<!-- OMBOR -->
+<div class="page active" id="page-ombor">
+  <div class="hcard">
+    <div class="hcard-row">
+      <div class="brand">📦 OMBOR</div>
+      <div style="text-align:right">
+        <div style="font-size:22px;font-weight:900;color:var(--gold)" id="totalTypes">0</div>
+        <div style="font-size:10px;color:var(--muted)">tur mahsulot</div>
+      </div>
+    </div>
+    <div class="search-wrap">
+      <span class="search-ico">🔍</span>
+      <input class="search-input" id="searchInput" placeholder="Qidirish..." oninput="renderOmbor()">
+    </div>
+  </div>
+  <div class="stats" id="omborStats"></div>
+  <div class="sum-card" id="sumCard"></div>
+  <div class="list" id="omborList"><div class="loading">⏳ Yuklanmoqda...</div></div>
+</div>
+
+<!-- SOTILGAN -->
+<div class="page" id="page-sotilgan">
+  <div class="hcard">
+    <div class="hcard-row">
+      <div class="brand">🛒 SOTILGAN</div>
+      <div style="text-align:right">
+        <div style="font-size:22px;font-weight:900;color:var(--green)" id="soldCount">0</div>
+        <div style="font-size:10px;color:var(--muted)">ta yozuv</div>
+      </div>
+    </div>
+  </div>
+  <div class="list" id="sotilganList"></div>
+</div>
+
+<!-- HISOBOT -->
+<div class="page" id="page-hisobot">
+  <div class="report-section" id="hisobotContent"></div>
+</div>
+
+<button class="fab" id="fabBtn" onclick="openAdd()">+</button>
+
+<!-- QO'SHISH MODAL -->
+<div class="overlay" id="modal" style="display:none">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title" id="modalTitle">➕ Yangi mahsulot</div>
+      <button class="close-btn" onclick="closeModal()">✕</button>
+    </div>
+    <div id="camWrap" style="display:none">
+      <video id="video" autoplay playsinline></video>
+      <div class="cam-btns">
+        <button class="img-btn img-btn-cam" onclick="capturePhoto()">📸 Suratga ol</button>
+        <button class="img-btn img-btn-gal" style="background:rgba(255,255,255,0.06);color:#9ca3af;border-color:rgba(255,255,255,0.1)" onclick="stopCamera()">Bekor</button>
+      </div>
+    </div>
+    <div id="imgPreview" style="display:none" class="img-preview"><img id="previewImg" src="" alt=""></div>
+    <div class="img-btns" id="imgBtns">
+      <button class="img-btn img-btn-cam" onclick="startCamera()">📷 Kamera</button>
+      <button class="img-btn img-btn-gal" onclick="document.getElementById('fileInput').click()">🖼️ Galereya</button>
+    </div>
+    <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="handleFile(event)">
+    <div class="field"><label>MAHSULOT NOMI *</label><input id="fName" placeholder="Masalan: Ko'k futbolka" type="text"></div>
+    <div class="field-row">
+      <div class="field"><label>MIQDOR (DONA) *</label><input id="fQty" class="qty-inp" type="number" min="0" value="1"></div>
+      <div class="field"><label>SOTISH NARXI (SO'M)</label><input id="fSellPrice" placeholder="dona boshiga" type="number" min="0"></div>
+    </div>
+    <button class="save-btn" id="saveBtn" onclick="saveProduct()">✅ Qo'shish</button>
+  </div>
+</div>
+
+<!-- SOTISH MODAL -->
+<div class="overlay" id="sellModal" style="display:none">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">💰 Sotish</div>
+      <button class="close-btn" onclick="closeSellModal()">✕</button>
+    </div>
+    <div id="sellProdName" style="font-weight:700;font-size:15px;margin-bottom:4px;color:var(--gold)"></div>
+    <div id="sellProdStock" style="font-size:12px;color:var(--muted);margin-bottom:12px"></div>
+    <div id="sCamWrap" style="display:none">
+      <video id="sVideo" autoplay playsinline></video>
+      <div class="cam-btns">
+        <button class="img-btn img-btn-cam" onclick="sCapturePhoto()">📸 Suratga ol</button>
+        <button class="img-btn img-btn-gal" style="background:rgba(255,255,255,0.06);color:#9ca3af;border-color:rgba(255,255,255,0.1)" onclick="sStopCamera()">Bekor</button>
+      </div>
+    </div>
+    <div id="sImgPreview" style="display:none" class="img-preview"><img id="sPreviewImg" src="" alt=""></div>
+    <div class="img-btns" id="sImgBtns">
+      <button class="img-btn img-btn-cam" onclick="sStartCamera()">📷 Kamera</button>
+      <button class="img-btn img-btn-gal" onclick="document.getElementById('sFileInput').click()">🖼️ Galereya</button>
+    </div>
+    <input type="file" id="sFileInput" accept="image/*" style="display:none" onchange="sSellHandleFile(event)">
+    <div class="field-row">
+      <div class="field"><label>NECHTA SOTILDI *</label><input id="sQty" class="qty-inp" type="number" min="1" value="1"></div>
+      <div class="field"><label>NARXI (SO'M/DONA)</label><input id="sSellPrice" placeholder="narx" type="number" min="0"></div>
+    </div>
+    <div id="sellTotal" style="text-align:center;padding:10px;background:rgba(34,197,94,0.1);border-radius:10px;margin-bottom:12px;font-size:13px;color:var(--green);font-weight:700"></div>
+    <button class="sell-btn" onclick="confirmSell()">✅ Sotishni tasdiqlash</button>
+  </div>
+</div>
+
+<script>
+// ===== IndexedDB =====
+let db;
+const DB_NAME = 'OmborDB', DB_VER = 1;
+
+function openDB() {
+  return new Promise((res, rej) => {
+    const req = indexedDB.open(DB_NAME, DB_VER);
+    req.onupgradeneeded = e => {
+      const d = e.target.result;
+      if (!d.objectStoreNames.contains('products')) {
+        const ps = d.createObjectStore('products', { keyPath: 'id' });
+        ps.createIndex('date', 'date');
+      }
+      if (!d.objectStoreNames.contains('sales')) {
+        d.createObjectStore('sales', { keyPath: 'id' });
+      }
+    };
+    req.onsuccess = e => { db = e.target.result; res(db); };
+    req.onerror = () => rej(req.error);
+  });
+}
+
+function dbGetAll(store) {
+  return new Promise((res, rej) => {
+    const tx = db.transaction(store, 'readonly');
+    const req = tx.objectStore(store).getAll();
+    req.onsuccess = () => res(req.result);
+    req.onerror = () => rej(req.error);
+  });
+}
+
+function dbPut(store, obj) {
+  return new Promise((res, rej) => {
+    const tx = db.transaction(store, 'readwrite');
+    const req = tx.objectStore(store).put(obj);
+    req.onsuccess = () => res();
+    req.onerror = () => rej(req.error);
+  });
+}
+
+function dbDelete(store, id) {
+  return new Promise((res, rej) => {
+    const tx = db.transaction(store, 'readwrite');
+    const req = tx.objectStore(store).delete(id);
+    req.onsuccess = () => res();
+    req.onerror = () => rej(req.error);
+  });
+}
+
+// ===== STATE =====
+let products = [], sales = [];
+let editId = null, sellId = null;
+let currentImage = null, sellImage = null;
+let stream = null, sStream = null;
+
+function fmt(n) { return Number(n||0).toLocaleString('uz-UZ'); }
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function showToast(msg, err) {
+  const t = document.createElement('div');
+  t.className = 'toast' + (err ? ' err' : '');
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2500);
+}
+
+async function loadAll() {
+  products = await dbGetAll('products');
+  products.sort((a, b) => b.id - a.id);
+  sales = await dbGetAll('sales');
+  sales.sort((a, b) => b.id - a.id);
+}
+
+// ===== TABS =====
+function switchTab(tab, el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + tab).classList.add('active');
+  document.getElementById('fabBtn').style.display = tab === 'ombor' ? 'flex' : 'none';
+  if (tab === 'sotilgan') renderSotilgan();
+  if (tab === 'hisobot') renderHisobot();
+}
+
+// ===== OMBOR =====
+function renderOmbor() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const filtered = products.filter(p => p.name.toLowerCase().includes(q));
+  const totalDona = products.reduce((s, p) => s + p.qty, 0);
+  const mavjud = products.filter(p => p.qty > 0).length;
+  const tugagan = products.filter(p => p.qty === 0).length;
+  const mavjudSumma = products.filter(p => p.qty > 0).reduce((s, p) => s + p.qty * (p.sellPrice || 0), 0);
+
+  document.getElementById('totalTypes').textContent = products.length;
+  document.getElementById('omborStats').innerHTML = `
+    <div class="stat stat-gold"><div class="stat-num">${totalDona}</div><div class="stat-lbl">Jami dona</div></div>
+    <div class="stat stat-green"><div class="stat-num">${mavjud}</div><div class="stat-lbl">Mavjud tur</div></div>
+    <div class="stat stat-red"><div class="stat-num">${tugagan}</div><div class="stat-lbl">Tugagan</div></div>`;
+
+  document.getElementById('sumCard').innerHTML = mavjudSumma > 0
+    ? `<div style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-size:10px;color:var(--muted);margin-bottom:3px">MAVJUD TOVARLAR SUMMASI</div>
+          <div style="font-size:22px;font-weight:900;color:var(--green)">${fmt(mavjudSumma)} so'm</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px">sotish narxi bo'yicha</div>
+        </div>
+        <div style="font-size:34px">💰</div>
+      </div>`
+    : `<div style="font-size:12px;color:var(--muted);text-align:center;padding:2px 0">Sotish narxlarini kiriting — summa ko'rinadi</div>`;
+
+  const list = document.getElementById('omborList');
+  if (filtered.length === 0) {
+    list.innerHTML = `<div class="empty"><div class="empty-ico">📦</div><div class="empty-ttl">${q ? 'Topilmadi' : "Mahsulot yo'q"}</div><div class="empty-sub">+ tugmani bosing</div></div>`;
+    return;
+  }
+  list.innerHTML = filtered.map(p => {
+    const qc = p.qty === 0 ? '#ef4444' : p.qty < 5 ? '#f59e0b' : '#22c55e';
+    const soldQty = sales.filter(s => s.productId === p.id).reduce((a, s) => a + s.qty, 0);
+    return `<div class="card">
+      <div class="card-img">${p.image ? `<img src="${p.image}" alt="">` : '📦'}</div>
+      <div class="card-info">
+        <div class="card-name">${esc(p.name)}</div>
+        ${p.sellPrice ? `<span class="price-tag">💵 ${fmt(p.sellPrice)} so'm</span>` : ''}
+        <div class="card-date">${p.date}</div>
+        <div class="qty-row">
+          <button class="qty-btn qty-minus" onclick="changeQty(${p.id},-1)">−</button>
+          <span class="qty-val" style="color:${qc}">${p.qty}</span>
+          <button class="qty-btn qty-plus" onclick="changeQty(${p.id},1)">+</button>
+          <span class="qty-unit">dona qoldi</span>
+        </div>
+        ${soldQty > 0 ? `<div class="sold-badge">✅ ${soldQty} dona sotilgan</div>` : ''}
+      </div>
+      <div class="card-actions">
+        <button class="act-btn act-sell" onclick="openSell(${p.id})">💰</button>
+        <button class="act-btn act-edit" onclick="openEdit(${p.id})">✏️</button>
+        <button class="act-btn act-del" onclick="delProduct(${p.id})">🗑️</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function changeQty(id, d) {
+  const p = products.find(x => x.id === id);
+  if (!p) return;
+  p.qty = Math.max(0, p.qty + d);
+  await dbPut('products', p);
+  renderOmbor();
+}
+
+async function delProduct(id) {
+  if (!confirm("O'chirilsinmi?")) return;
+  products = products.filter(p => p.id !== id);
+  await dbDelete('products', id);
+  renderOmbor();
+  showToast("O'chirildi 🗑️");
+}
+
+// ===== QO'SHISH / TAHRIRLASH =====
+function openAdd() {
+  editId = null; currentImage = null;
+  document.getElementById('fName').value = '';
+  document.getElementById('fQty').value = 1;
+  document.getElementById('fSellPrice').value = '';
+  document.getElementById('previewImg').src = '';
+  document.getElementById('imgPreview').style.display = 'none';
+  document.getElementById('modalTitle').textContent = '➕ Yangi mahsulot';
+  document.getElementById('saveBtn').textContent = "✅ Qo'shish";
+  document.getElementById('modal').style.display = 'flex';
+  stopCamera();
+}
+
+function openEdit(id) {
+  const p = products.find(x => x.id === id);
+  if (!p) return;
+  editId = id; currentImage = p.image || null;
+  document.getElementById('fName').value = p.name;
+  document.getElementById('fQty').value = p.qty;
+  document.getElementById('fSellPrice').value = p.sellPrice || '';
+  if (p.image) { document.getElementById('previewImg').src = p.image; document.getElementById('imgPreview').style.display = 'block'; }
+  else document.getElementById('imgPreview').style.display = 'none';
+  document.getElementById('modalTitle').textContent = '✏️ Tahrirlash';
+  document.getElementById('saveBtn').textContent = '💾 Saqlash';
+  document.getElementById('modal').style.display = 'flex';
+  stopCamera();
+}
+
+function closeModal() { stopCamera(); document.getElementById('modal').style.display = 'none'; }
+
+async function saveProduct() {
+  const name = document.getElementById('fName').value.trim();
+  const qty = parseInt(document.getElementById('fQty').value) || 0;
+  const sellPrice = parseFloat(document.getElementById('fSellPrice').value) || 0;
+  if (!name) { showToast('Nom kiriting!', true); return; }
+  if (editId !== null) {
+    const p = products.find(x => x.id === editId);
+    if (p) { p.name = name; p.qty = qty; p.sellPrice = sellPrice; p.image = currentImage; }
+    await dbPut('products', p);
+    showToast('Yangilandi ✓');
+  } else {
+    const p = { id: Date.now(), name, qty, sellPrice, image: currentImage, date: new Date().toLocaleDateString('uz-UZ') };
+    products.unshift(p);
+    await dbPut('products', p);
+    showToast("Qo'shildi ✓");
+  }
+  closeModal(); renderOmbor();
+}
+
+// ===== SOTISH =====
+function openSell(id) {
+  const p = products.find(x => x.id === id);
+  if (!p) return;
+  if (p.qty === 0) { showToast("Omborda mahsulot yo'q!", true); return; }
+  sellId = id; sellImage = null;
+  document.getElementById('sellProdName').textContent = '📦 ' + p.name;
+  document.getElementById('sellProdStock').textContent = `Qoldiq: ${p.qty} dona`;
+  document.getElementById('sQty').value = 1;
+  document.getElementById('sSellPrice').value = p.sellPrice || '';
+  document.getElementById('sPreviewImg').src = '';
+  document.getElementById('sImgPreview').style.display = 'none';
+  document.getElementById('sCamWrap').style.display = 'none';
+  document.getElementById('sImgBtns').style.display = 'flex';
+  updateSellTotal();
+  document.getElementById('sellModal').style.display = 'flex';
+  document.getElementById('sQty').oninput = updateSellTotal;
+  document.getElementById('sSellPrice').oninput = updateSellTotal;
+}
+
+function updateSellTotal() {
+  const qty = parseInt(document.getElementById('sQty').value) || 0;
+  const price = parseFloat(document.getElementById('sSellPrice').value) || 0;
+  const total = qty * price;
+  document.getElementById('sellTotal').textContent = total > 0 ? `Jami: ${fmt(total)} so'm` : "Narx kiriting — jami ko'rinadi";
+}
+
+function closeSellModal() { sStopCamera(); document.getElementById('sellModal').style.display = 'none'; }
+
+async function confirmSell() {
+  const p = products.find(x => x.id === sellId);
+  if (!p) return;
+  const qty = parseInt(document.getElementById('sQty').value) || 0;
+  const sellPrice = parseFloat(document.getElementById('sSellPrice').value) || 0;
+  if (qty <= 0) { showToast("Miqdor kiriting!", true); return; }
+  if (qty > p.qty) { showToast(`Faqat ${p.qty} dona bor!`, true); return; }
+  p.qty -= qty;
+  await dbPut('products', p);
+  const totalSum = sellPrice * qty;
+  const sale = {
+    id: Date.now(), productId: p.id, productName: p.name,
+    productImage: p.image, saleImage: sellImage,
+    qty, sellPrice, totalSum,
+    date: new Date().toLocaleDateString('uz-UZ'),
+    time: new Date().toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit' })
+  };
+  sales.unshift(sale);
+  await dbPut('sales', sale);
+  closeSellModal(); renderOmbor();
+  showToast(`✅ ${qty} dona sotildi! Jami: ${fmt(totalSum)} so'm`);
+}
+
+// ===== SOTILGAN =====
+function renderSotilgan() {
+  document.getElementById('soldCount').textContent = sales.length;
+  const list = document.getElementById('sotilganList');
+  if (sales.length === 0) {
+    list.innerHTML = `<div class="empty"><div class="empty-ico">🛒</div><div class="empty-ttl">Hali sotilmagan</div><div class="empty-sub">Ombordan 💰 tugma orqali soting</div></div>`;
+    return;
+  }
+  list.innerHTML = sales.map(s => `
+    <div class="sold-card">
+      <div class="sold-img">${s.saleImage ? `<img src="${s.saleImage}" alt="">` : s.productImage ? `<img src="${s.productImage}" alt="">` : '📦'}</div>
+      <div class="sold-body">
+        <div class="sold-name">${esc(s.productName)}</div>
+        <div class="sold-row"><span class="sold-lbl">Sotilgan dona:</span><span class="sold-val" style="color:var(--gold)">${s.qty} dona</span></div>
+        <div class="sold-row"><span class="sold-lbl">Narxi:</span><span class="sold-val">${fmt(s.sellPrice)} so'm/dona</span></div>
+        <div class="sold-row"><span class="sold-lbl">Jami summa:</span><span class="sold-val" style="color:var(--green)">${fmt(s.totalSum)} so'm</span></div>
+        <div class="sold-row"><span class="sold-lbl" style="color:var(--muted)">${s.date} ${s.time || ''}</span><span></span></div>
+      </div>
+    </div>`).join('');
+}
+
+// ===== HISOBOT =====
+function renderHisobot() {
+  const totalSoldSum = sales.reduce((s, x) => s + x.totalSum, 0);
+  const totalSoldQty = sales.reduce((s, x) => s + x.qty, 0);
+  const mavjudSumma = products.filter(p => p.qty > 0).reduce((s, p) => s + p.qty * (p.sellPrice || 0), 0);
+  const totalDona = products.reduce((s, p) => s + p.qty, 0);
+  document.getElementById('hisobotContent').innerHTML = `
+    <div class="big-sum">
+      <div class="big-sum-lbl">Jami sotuv summasi</div>
+      <div class="big-sum-num">${fmt(totalSoldSum)} so'm</div>
+    </div>
+    <div class="report-title">Savdo hisoboti</div>
+    <div class="report-card">
+      <div class="report-row"><span class="report-lbl">Jami sotilgan dona</span><span class="report-val" style="color:var(--green)">${totalSoldQty} dona</span></div>
+      <div class="report-row"><span class="report-lbl">Jami sotuv summasi</span><span class="report-val" style="color:var(--green)">${fmt(totalSoldSum)} so'm</span></div>
+      <div class="report-row"><span class="report-lbl">Sotuv yozuvlari</span><span class="report-val">${sales.length} ta</span></div>
+    </div>
+    <div class="report-title">Ombor holati</div>
+    <div class="report-card">
+      <div class="report-row"><span class="report-lbl">Mahsulot turlari</span><span class="report-val">${products.length} ta</span></div>
+      <div class="report-row"><span class="report-lbl">Jami qoldiq</span><span class="report-val">${totalDona} dona</span></div>
+      <div class="report-row"><span class="report-lbl">Mavjud tovarlar summasi</span><span class="report-val" style="color:var(--gold)">${fmt(mavjudSumma)} so'm</span></div>
+      <div class="report-row"><span class="report-lbl">Tugagan mahsulotlar</span><span class="report-val" style="color:var(--red)">${products.filter(p=>p.qty===0).length} ta</span></div>
+    </div>
+    ${sales.length > 0 ? `
+    <div class="report-title">Mahsulot bo'yicha sotuv</div>
+    <div class="report-card">
+      ${[...new Set(sales.map(s=>s.productId))].map(pid=>{
+        const ps=sales.filter(s=>s.productId===pid);
+        const pSum=ps.reduce((a,s)=>a+s.totalSum,0);
+        const pQty=ps.reduce((a,s)=>a+s.qty,0);
+        return `<div class="report-row"><span class="report-lbl">${esc(ps[0].productName)} — ${pQty} dona</span><span class="report-val" style="color:var(--green)">${fmt(pSum)} so'm</span></div>`;
+      }).join('')}
+    </div>` : ''}`;
+}
+
+// ===== KAMERA =====
+async function startCamera() {
+  document.getElementById('camWrap').style.display='block';
+  document.getElementById('imgBtns').style.display='none';
+  document.getElementById('imgPreview').style.display='none';
+  try { stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}}); document.getElementById('video').srcObject=stream; }
+  catch { showToast("Kamera ishlamadi",true); stopCamera(); }
+}
+function stopCamera() {
+  if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;}
+  document.getElementById('camWrap').style.display='none';
+  document.getElementById('imgBtns').style.display='flex';
+}
+function capturePhoto() {
+  const v=document.getElementById('video');
+  const c=document.createElement('canvas');
+  c.width=v.videoWidth; c.height=v.videoHeight;
+  c.getContext('2d').drawImage(v,0,0);
+  currentImage=c.toDataURL('image/jpeg',0.85);
+  document.getElementById('previewImg').src=currentImage;
+  document.getElementById('imgPreview').style.display='block';
+  stopCamera();
+}
+function handleFile(e) {
+  const file=e.target.files[0]; if(!file)return;
+  const r=new FileReader();
+  r.onload=ev=>{currentImage=ev.target.result; document.getElementById('previewImg').src=currentImage; document.getElementById('imgPreview').style.display='block';};
+  r.readAsDataURL(file); e.target.value='';
+}
+
+// ===== SOTISH KAMERA =====
+async function sStartCamera() {
+  document.getElementById('sCamWrap').style.display='block';
+  document.getElementById('sImgBtns').style.display='none';
+  document.getElementById('sImgPreview').style.display='none';
+  try { sStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}}); document.getElementById('sVideo').srcObject=sStream; }
+  catch { showToast("Kamera ishlamadi",true); sStopCamera(); }
+}
+function sStopCamera() {
+  if(sStream){sStream.getTracks().forEach(t=>t.stop());sStream=null;}
+  document.getElementById('sCamWrap').style.display='none';
+  document.getElementById('sImgBtns').style.display='flex';
+}
+function sCapturePhoto() {
+  const v=document.getElementById('sVideo');
+  const c=document.createElement('canvas');
+  c.width=v.videoWidth; c.height=v.videoHeight;
+  c.getContext('2d').drawImage(v,0,0);
+  sellImage=c.toDataURL('image/jpeg',0.85);
+  document.getElementById('sPreviewImg').src=sellImage;
+  document.getElementById('sImgPreview').style.display='block';
+  sStopCamera();
+}
+function sSellHandleFile(e) {
+  const file=e.target.files[0]; if(!file)return;
+  const r=new FileReader();
+  r.onload=ev=>{sellImage=ev.target.result; document.getElementById('sPreviewImg').src=sellImage; document.getElementById('sImgPreview').style.display='block';};
+  r.readAsDataURL(file); e.target.value='';
+}
+
+// ===== START =====
+openDB().then(async () => {
+  await loadAll();
+  renderOmbor();
+}).catch(() => {
+  showToast("Xatolik yuz berdi", true);
+});
+</script>
+</body>
+</html>
